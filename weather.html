@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(to right, #83a4d4, #b6fbff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: #ffffffcc;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      padding: 30px 40px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input {
+      padding: 12px;
+      width: 70%;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 10px;
+      background-color: #007BFF;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #0056b3;
+    }
+
+    .weather-card {
+      background: #f9f9f9;
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      text-align: left;
+    }
+
+    .weather-card h2 {
+      margin-bottom: 10px;
+      color: #444;
+    }
+
+    .weather-card p {
+      margin: 6px 0;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌦️ Weather Forecast</h1>
+    <input type="text" id="cityInput" placeholder="Enter city name..." />
+    <br />
+    <button class="btn" onclick="getWeatherByCity()">Search</button>
+    <button class="btn" onclick="getWeatherByLocation()">Use My Location</button>
+
+    <div id="weatherInfo" class="weather-card">
+      <!-- Weather info will appear here -->
+    </div>
+  </div>
+
+  <script>
+  const API_KEY = 'd1db378d002a9665694c2c7f349cbd78';
+
+  function displayWeather(data) {
+    const weatherDiv = document.getElementById("weatherInfo");
+    if (data.cod !== 200) {
+      weatherDiv.innerHTML = `<p style="color:red;">Error: ${data.message}</p>`;
+      return;
+    }
+
+    weatherDiv.innerHTML = `
+      <h2>${data.name}, ${data.sys.country}</h2>
+      <p><strong>🌤️ Weather:</strong> ${data.weather[0].main} (${data.weather[0].description})</p>
+      <p><strong>🌡️ Temp:</strong> ${(data.main.temp - 273.15).toFixed(1)} °C</p>
+      <p><strong>💧 Humidity:</strong> ${data.main.humidity}%</p>
+      <p><strong>🌬️ Wind:</strong> ${data.wind.speed} m/s</p>
+    `;
+  }
+
+  function getWeatherByCity() {
+    const city = document.getElementById("cityInput").value.trim();
+    if (!city) return alert("Please enter a city name.");
+
+    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}`)
+      .then(res => res.json())
+      .then(data => displayWeather(data))
+      .catch(err => {
+        document.getElementById("weatherInfo").innerHTML = `<p style="color:red;">Failed to fetch: ${err.message}</p>`;
+      });
+  }
+
+  function getWeatherByLocation() {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(pos => {
+      const { latitude, longitude } = pos.coords;
+      fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`)
+        .then(res => res.json())
+        .then(data => displayWeather(data))
+        .catch(err => {
+          document.getElementById("weatherInfo").innerHTML = `<p style="color:red;">Failed to fetch location: ${err.message}</p>`;
+        });
+    }, () => {
+      alert("Unable to access location.");
+    });
+  }
+</script>
+
+  </script>
+</body>
+</html>
